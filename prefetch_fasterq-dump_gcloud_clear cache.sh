@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Description: This script automatically downloads NCBI SRA reads
+# Description: This script automatically downloads NCBI SRA reads and stores them in Google Cloud to avoid disk space issues. This script is meant to be used after installing SRAtoolkit in your computer.
 # Author: Julia Quintana
 # Date: 2025-02-03
 # Version: 1.0

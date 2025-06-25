@@ -23,15 +23,15 @@ while IFS= read -r accession; do
         echo "🔬 Running fastp QC for $accession..."
         # Run fastp QC
         fastp \
-        -i "$RAW_DIR/${accession}_1.fastq" \
-        -I "$RAW_DIR/${accession}_2.fastq" \
-        -o "$QC_DIR/${accession}_1.clean.fastq" \
-        -O "$QC_DIR/${accession}_2.clean.fastq" \
-        -h "$QC_DIR/${accession}_fastp.html" \
-        -j "$QC_DIR/${accession}_fastp.json" \
-        --detect_adapter_for_pe \
-        --trim_front1 15 \
-        --trim_front2 15 \
+        -i "$RAW_DIR/${accession}_1.fastq"
+        -I "$RAW_DIR/${accession}_2.fastq"
+        -o "$QC_DIR/${accession}_1.clean.fastq"
+        -O "$QC_DIR/${accession}_2.clean.fastq"
+        -h "$QC_DIR/${accession}_fastp.html"
+        -j "$QC_DIR/${accession}_fastp.json"
+        --detect_adapter_for_pe
+        --trim_front1 15
+        --trim_front2 15
         --thread 4
 
         # Compress cleaned FASTQ files

@@ -30,7 +30,7 @@ while IFS= read -r accession; do
         --thread 4
 
 # Upload to Google Cloud Storage
-        gsutil -m cp -r "$QC_DIR/${accession}"* gs://srastorage/Triticum_root/
+        gsutil -m cp -r "$QC_DIR/${accession}"* gs://$QC_DIR
 
 # Clear the cache
         cache-mgr --clear

@@ -9,4 +9,4 @@ This project aims to enhance our understanding of crop domestication by identify
 
 All the scripts developed during the project will be uploaded here and made publicly available.
 
-Additionally, the list of curated SRA files that will be used in the first year of the project sill be available.
+Additionally, the list of curated SRA files that will be used in the first year of the project will be available.

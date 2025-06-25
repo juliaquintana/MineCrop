@@ -31,4 +31,16 @@ while IFS= read -r accession; do
         --thread 4
 
     echo "✅ Done with $accession"
+
+# Upload to Google Cloud Storage (optional)
+        gsutil -m cp -r "$QC_DIR/${accession}"* gs://srastorage/Triticum_root/QC
+
+# Clear the cache (optional)
+        cache-mgr --clear
+        echo "Cleared cache for $accession."
+    else
+        echo "❌ Failed to prefetch $accession"
+    fi
+
+    echo "✅ Done with $accession"
 done < "$SRA_LIST"

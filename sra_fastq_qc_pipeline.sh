@@ -19,7 +19,7 @@ while IFS= read -r accession; do
     if prefetch "$accession"; then
         fasterq-dump "$accession" -O "$RAW_DIR" -t "$RAW_DIR"
         echo "🔬 Running fastp QC for $accession..."
-        # Run fastp QC
+        # Run fastp QC analysis for PE reads. For SE reads, use only -i and -o and remove _1 suffix. --trimm is usually done after a first QC check
         fastp \
             -i "$RAW_DIR/${accession}_1.fastq" \
             -I "$RAW_DIR/${accession}_2.fastq" \

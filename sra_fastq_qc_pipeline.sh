@@ -5,9 +5,9 @@
 
 # Set paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRA_LIST="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/MineCrop/WP1/SRR_Acc_List.txt"
-RAW_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/MineCrop/WP1/sra/sra"
-QC_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/MineCrop/WP1/sra/qc_reports"
+SRA_LIST="$SCRIPT_DIR/SRR_Acc_List.txt"
+RAW_DIR="$SCRIPT_DIR/raw_fastq"
+QC_DIR="$SCRIPT_DIR/qc_reports"
 
 # Create output directories
 mkdir -p "$RAW_DIR" "$QC_DIR"
@@ -39,7 +39,7 @@ while IFS= read -r accession; do
         
         # Upload to Google Cloud Storage
         echo "☁️ Uploading QC results to Google Cloud..."
-        gsutil -m cp -r "$QC_DIR/${accession}_fastp.html" "$QC_DIR/${accession}_1.clean.fastq.gz" "$QC_DIR/${accession}_2.clean.fastq.gz" gs://srastorage/Triticum_root/QC
+        gsutil -m cp -r "$QC_DIR/${accession}_fastp.html" "$QC_DIR/${accession}_1.clean.fastq.gz" "$QC_DIR/${accession}_2.clean.fastq.gz" gs://$QC_DIR_in_Google_Cloud/QC
 
         # Clear the cache
         echo "🧹 Clearing cache..."

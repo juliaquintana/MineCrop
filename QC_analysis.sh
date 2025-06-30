@@ -20,14 +20,26 @@ while IFS= read -r accession; do
     fasterq-dump "$accession" -O "$RAW_DIR" -t "$RAW_DIR"
 
     echo "🔬 Running fastp QC for $accession..."
-    fastp \
-        -i "$RAW_DIR/${accession}_1.fastq" \
-        -I "$RAW_DIR/${accession}_2.fastq" \
-        -o "$QC_DIR/${accession}_1.clean.fastq" \
-        -O "$QC_DIR/${accession}_2.clean.fastq" \
-        -h "$QC_DIR/${accession}_fastp.html" \
-        -j "$QC_DIR/${accession}_fastp.json" \
-        --thread 4
+  # Loop through each accession number
+while IFS= read -r accession; do
+    echo "🔽 Downloading $accession..."
+    
+    if prefetch "$accession"; then
+        fasterq-dump "$accession" -O "$RAW_DIR" -t "$RAW_DIR"
+
+        echo "🔬 Running fastp QC for $accession..."
+        # Run fastp QC
+        fastp \
+            -i "$RAW_DIR/${accession}_1.fastq" \
+            -I "$RAW_DIR/${accession}_2.fastq" \
+            -o "$QC_DIR/${accession}_1.clean.fastq" \
+            -O "$QC_DIR/${accession}_2.clean.fastq" \
+            -h "$QC_DIR/${accession}_fastp.html" \
+            -j "$QC_DIR/${accession}_fastp.json" \
+            --detect_adapter_for_pe \
+            --trim_front1 15 \
+            --trim_front2 15 \
+            --thread 4
 
 # Upload to Google Cloud Storage
         gsutil -m cp -r "$QC_DIR/${accession}"* gs://$QC_DIR

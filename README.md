@@ -8,5 +8,3 @@ This is the repository for the project MineCrop, funded by Comunidad de Madrid a
 This project aims to enhance our understanding of crop domestication by identifying micronutrient metabolism pathways that may have been lost during domestication of traditional varieties.
 
 All the scripts developed during the project will be uploaded here and made publicly available.
-
-Additionally, the list of curated SRA files that will be used in the first WP of the project will be available.

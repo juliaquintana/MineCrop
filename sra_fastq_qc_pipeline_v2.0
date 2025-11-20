@@ -41,7 +41,7 @@ while IFS= read -r accession; do
         gsutil -m cp "$QC_DIR/${accession}_fastp.html" \
              "$QC_DIR/${accession}_1.clean.fastq.gz" \
              "$QC_DIR/${accession}_2.clean.fastq.gz" \
-             gs://srastorage/Triticum_shoot
+             gs://srastorage/your destination folder
 
         # Clear the cache
                 echo "🧹 Cleaning up..."

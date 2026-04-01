@@ -16,6 +16,10 @@ By combining comparative genomics, transcriptomics, and functional annotation, t
 
 All scripts developed during the project are made **freely available** in this repository and are designed to automate specific data handling, processing, and analysis workflows commonly used in genomics and evolutionary biology.
 
+## License
+
+This repository is licensed under the MIT License.
+
 ---
 
 ## Repository Contents

@@ -1,6 +1,6 @@
-# MineCrop
+**MineCrop**
 
-![Logo](https://github.com/user-attachments/assets/159906b0-8cd0-4c9a-999f-2a18c5fbc977)
+<img src="https://github.com/user-attachments/assets/159906b0-8cd0-4c9a-999f-2a18c5fbc977" width="300">
 
 This is the repository for the project MineCrop, funded by Comunidad de Madrid and hosted by Universidad Rey Juan Carlos. This project has a commitement with open data and shared resources.
 

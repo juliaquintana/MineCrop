@@ -1,0 +1,121 @@
+#!/bin/bash
+# Description: Parallel download and QC of FASTQ files from SRA using fastp
+# Author: Julia Quintana
+# Date: 2025-06-24
+
+#Parallel processing using GNU parallel
+#Temporary storage in /tmp
+#Fastp QC with multithreading
+#Google Cloud upload
+#Success/failure tracking
+#Final summary
+# Safer execution with set -euo pipefail and trap.
+# Timestamped logging for better traceability.
+# Retry logic for network-sensitive commands.
+# Centralized cache cleanup after all parallel jobs.
+# Clear separation of success/failure tracking.
+
+set -euo pipefail
+trap 'log "❗ Unexpected error occurred. Exiting."; exit 1' ERR
+
+# Logging function
+log() {
+    echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+}
+
+# Retry function for flaky commands
+retry() {
+    local n=0
+    local max=3
+    local delay=5
+    until "$@"; do
+        ((n++))
+        if [[ $n -ge $max ]]; then
+            log "❌ Command failed after $n attempts: $*"
+            return 1
+        fi
+        log "⚠️ Retry $n/$max: $*"
+        sleep $delay
+    done
+}
+
+# Set paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRA_LIST="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/MineCrop/WP1/SRR_Acc_List.txt"
+RAW_DIR="/tmp/sra_raw"
+QC_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/MineCrop/WP1/sra/qc_reports"
+SUCCESS_FILE="$SCRIPT_DIR/successful_accessions.txt"
+FAILED_FILE="$SCRIPT_DIR/failed_accessions.txt"
+
+# Prepare directories and summary files
+mkdir -p "$RAW_DIR" "$QC_DIR"
+> "$SUCCESS_FILE"
+> "$FAILED_FILE"
+
+process_accession() {
+    accession="$1"
+    log "🔽 Starting $accession..."
+
+    if ! retry prefetch "$accession"; then
+        log "❌ Failed to prefetch $accession"
+        echo "$accession" >> "$FAILED_FILE"
+        return 1
+    fi
+
+    log "📥 Downloaded $accession"
+    if ! fasterq-dump "$accession" -O "$RAW_DIR" -t "$RAW_DIR" --split-files; then
+        log "❌ fasterq-dump failed for $accession"
+        echo "$accession" >> "$FAILED_FILE"
+        return 1
+    fi
+
+    log "🔬 Running fastp QC..."
+    if ! fastp \
+        -i "$RAW_DIR/${accession}_1.fastq" \
+        -I "$RAW_DIR/${accession}_2.fastq" \
+        -o "$QC_DIR/${accession}_1.clean.fastq.gz" \
+        -O "$QC_DIR/${accession}_2.clean.fastq.gz" \
+        -h "$QC_DIR/${accession}_fastp.html" \
+        -j "$QC_DIR/${accession}_fastp.json" \
+        --detect_adapter_for_pe \
+        --trim_front1 15 \
+        --trim_front2 15 \
+        --thread 8; then
+        log "❌ fastp failed for $accession"
+        echo "$accession" >> "$FAILED_FILE"
+        return 1
+    fi
+
+    log "☁️ Uploading to Google Cloud..."
+    if ! retry gsutil -m cp "$QC_DIR/${accession}_fastp.html" \
+                          "$QC_DIR/${accession}_1.clean.fastq.gz" \
+                          "$QC_DIR/${accession}_2.clean.fastq.gz" \
+                          gs://srastorage/Aeogilops_tauschii_shoot; then
+        log "❌ Upload failed for $accession"
+        echo "$accession" >> "$FAILED_FILE"
+        return 1
+    fi
+
+    log "✅ $accession processed successfully"
+    echo "$accession" >> "$SUCCESS_FILE"
+
+}
+
+# Export function and variables for GNU parallel
+export -f process_accession
+export RAW_DIR QC_DIR SCRIPT_DIR SUCCESS_FILE FAILED_FILE
+export -f log retry
+
+# Run in parallel (adjust -j for number of cores)
+cat "$SRA_LIST" | parallel -j 4 process_accession
+
+# Clear cache after all jobs are done
+log "🧹 Final cache cleanup..."
+cache-mgr --clear
+log "🧹 Cleaning up FASTQ files..."
+rm -f "$RAW_DIR/${accession}_1.fastq" "$RAW_DIR/${accession}_2.fastq"
+
+# Final summary
+log "📊 Summary:"
+log "✅ Successful: $(wc -l < "$SUCCESS_FILE")"
+log "❌ Failed:     $(wc -l < "$FAILED_FILE")"

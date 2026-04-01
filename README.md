@@ -12,7 +12,7 @@ The project is firmly committed to **open science**, **open data**, and the publ
 
 The MineCrop project aims to enhance our understanding of **crop domestication** by identifying **micronutrient metabolism pathways** that may have been **lost or altered during the domestication of traditional crop varieties**.
 
-By combining comparative genomics, transcriptomics, and functional annotation, the project seeks to pinpoint genetic changes associated with nutritional traits and domestication processes.
+By combining comparative genomics, transcriptomics, and functional annotation, the project seeks to identify major genetic changes associated with nutritional traits and domestication processes.
 
 All scripts developed during the project are made **freely available** in this repository and are designed to automate specific data handling, processing, and analysis workflows commonly used in genomics and evolutionary biology.
 

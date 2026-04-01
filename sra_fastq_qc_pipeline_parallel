@@ -41,9 +41,9 @@ retry() {
 
 # Set paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRA_LIST="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/MineCrop/WP1/SRR_Acc_List.txt"
+SRA_LIST="$SCRIPT_DIR/SRR_Acc_List.txt"
 RAW_DIR="/tmp/sra_raw"
-QC_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/MineCrop/WP1/sra/qc_reports"
+QC_DIR="$SCRIPT_DIR/qc_reports"
 SUCCESS_FILE="$SCRIPT_DIR/successful_accessions.txt"
 FAILED_FILE="$SCRIPT_DIR/failed_accessions.txt"
 

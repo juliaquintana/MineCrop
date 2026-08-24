@@ -9,7 +9,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRA_LIST="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/scripts/SRR_Acc_List.txt"
 RAW_DIR="/tmp/sra_raw"
-
 QC_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/sra/qc_reports"
 
 # Create output directories

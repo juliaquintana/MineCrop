@@ -13,16 +13,16 @@ set -euo pipefail
 # -------------------------
 
 # File containing one SRA accession per line
-SRA_LIST="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/scripts/SRR_Acc_List.txt"
+SRA_LIST="/path/to/SRR_Acc_List.txt"
 
 # Temporary directory for FASTQ files
 RAW_DIR="/tmp/sra_raw"
 
 # Directory for QC results
-QC_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/sra/qc_reports"
+QC_DIR="/path/to/qc_reports"
 
 # Google Cloud bucket
-GCS_BUCKET="gs://sra_c4evo/"
+GCS_BUCKET="gs://your_bucket_name/"
 
 # Thread settings
 DUMP_THREADS=8

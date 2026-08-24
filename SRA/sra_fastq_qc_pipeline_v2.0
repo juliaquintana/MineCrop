@@ -7,9 +7,9 @@ set -euo pipefail
 
 # Set paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRA_LIST="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/scripts/SRR_Acc_List.txt"
+SRA_LIST="./SRR_Acc_List.txt"
 RAW_DIR="/tmp/sra_raw"
-QC_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/sra/qc_reports"
+QC_DIR="./qc_reports"
 
 # Create output directories
 mkdir -p "$RAW_DIR" "$QC_DIR"
@@ -46,7 +46,7 @@ while IFS= read -r accession || [[ -n "$accession" ]]; do
         gsutil -m cp \
             "$QC_DIR/${accession}_1_fastqc.html" \
             "$QC_DIR/${accession}_2_fastqc.html" \
-            gs://sra_c4evo/
+            gs://your-bucket-name
 
         echo "🧹 Cleaning up..."
 
@@ -75,10 +75,10 @@ echo "☁️ Uploading MultiQC report..."
 
 gsutil cp \
     "$QC_DIR/multiqc/multiqc_report.html" \
-    gs://sra_c4evo/
+    gs://your-bucket-name
 
 gsutil -m cp -r \
     "$QC_DIR/multiqc/multiqc_data" \
-    gs://sra_c4evo/
+    gs://your-bucket-name
 
 echo "🎉 QC analysis complete!"

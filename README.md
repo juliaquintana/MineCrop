@@ -33,7 +33,7 @@ This repository currently includes:
 
 ## 1. Shell Scripts for Downloading and Processing SRA Data
 
-### `sra_fastq_qc_pipeline.sh`
+### `sra_fastqc.sh`
 
 #### Purpose
 Downloads sequencing data from the **NCBI Sequence Read Archive (SRA)**, converts it to FASTQ format, performs quality control and trimming using **FastQC**, generate a summary report with MultiQC, and upload quality control reports to **Google Cloud Storage**.
@@ -43,15 +43,13 @@ This script processes SRA accessions **sequentially** from a provided list. For 
 
 - Downloads the SRA record using prefetch
 - Converts SRA data to FASTQ format using fasterq-dump
-- Runs FastQC on paired-end reads
-- Uploads FastQC reports to a Google Cloud Storage bucket
+- Runs FastQC to assess sequencing quality
+- Stores FastQC HTML and ZIP reports
 - Removes temporary FASTQ files
-- Clears the local SRA cache
-- Temporary files are stored in `/tmp` to improve I/O performance and reduce filesystem clutter.
 
 After all accessions have been processed, the pipeline:
-1. Generates a MultiQC summary report
-2. Uploads the MultiQC report and associated data to Google Cloud Storage
+1. Generates a combined QC summary using `MultiQC`
+2. Uploads the MultiQC report to Google Cloud Storage
 
 Temporary FASTQ files are stored in /tmp and removed after processing to reduce storage requirements.
 

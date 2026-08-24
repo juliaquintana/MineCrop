@@ -36,42 +36,62 @@ This repository currently includes:
 ### `sra_fastq_qc_pipeline.sh`
 
 #### Purpose
-Downloads sequencing data from the **NCBI Sequence Read Archive (SRA)**, converts it to FASTQ format, performs quality control and trimming using **fastp**, and uploads cleaned reads and QC reports to **Google Cloud Storage**.
+Downloads sequencing data from the **NCBI Sequence Read Archive (SRA)**, converts it to FASTQ format, performs quality control and trimming using **FastQC**, generate a summary report with MultiQC, and upload quality control reports to **Google Cloud Storage**.
 
 #### Description
 This script processes SRA accessions **sequentially** from a provided list. For each accession, it:
 
-- Downloads raw SRA files using `prefetch`
-- Converts SRA files to paired‑end FASTQ using `fasterq-dump`
-- Runs **fastp** for quality control, adapter detection, and read trimming
-- Generates compressed cleaned FASTQ files and fastp HTML/JSON reports
-- Uploads QC outputs to a specified Google Cloud Storage bucket
-- Cleans up intermediate FASTQ files and clears the SRA cache
+- Downloads the SRA record using prefetch
+- Converts SRA data to FASTQ format using fasterq-dump
+- Runs FastQC on paired-end reads
+- Uploads FastQC reports to a Google Cloud Storage bucket
+- Removes temporary FASTQ files
+- Clears the local SRA cache
+- Temporary files are stored in `/tmp` to improve I/O performance and reduce filesystem clutter.
 
-Temporary files are stored in `/tmp` to improve I/O performance and reduce filesystem clutter.
+After all accessions have been processed, the pipeline:
+1. Generates a MultiQC summary report
+2. Uploads the MultiQC report and associated data to Google Cloud Storage
 
-#### Requirements
+Temporary FASTQ files are stored in /tmp and removed after processing to reduce storage requirements.
+
+#### Requierements
+
+#### Software
 - Bash (Linux or macOS)
 - SRA Toolkit (`prefetch`, `fasterq-dump`, `cache-mgr`)
-- fastp
+- fastQC
+- MultiQC
 - Google Cloud SDK (`gsutil`)
+
+#### System Requirements
+Internet connection
+Sufficient available disk space in /tmp
+Access permissions for the target Google Cloud Storage bucket
 - Internet access
 - Sufficient disk space in `/tmp`
+
 
 #### Input
 - A plain text file containing one SRA accession per line  
   (`SRR_Acc_List.txt`)
 
 #### Output
-- Cleaned paired‑end FASTQ files (`*.clean.fastq.gz`)
 - fastp QC reports (`*.html`, `*.json`)
-- Uploaded results in a Google Cloud Storage bucket
+- MultiQC Report
 
 #### Typical Use Cases
 - Quality control of small to medium numbers of SRA datasets
 - Simple and transparent SRA‑to‑FASTQ workflows
 - Environments where parallel execution is not required
 - Step‑by‑step debugging or manual inspection of individual samples
+
+Notes
+This workflow does not perform trimming or filtering.
+FastQC is used only for sequence quality assessment.
+Read trimming can be performed later using tools such as fastp, Trimmomatic, or Cutadapt if required.
+The script currently assumes paired-end sequencing data.
+Accessions containing trailing spaces or Windows line endings are automatically cleaned before processing.
 
 ---
 

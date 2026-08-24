@@ -86,7 +86,7 @@ Access permissions for the target Google Cloud Storage bucket
 - Environments where parallel execution is not required
 - Step‑by‑step debugging or manual inspection of individual samples
 
-Notes
+Notes: 
 This workflow does not perform trimming or filtering.
 FastQC is used only for sequence quality assessment.
 Read trimming can be performed later using tools such as fastp, Trimmomatic, or Cutadapt if required.

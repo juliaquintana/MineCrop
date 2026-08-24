@@ -26,8 +26,8 @@ This repository is licensed under the MIT License.
 
 This repository currently includes:
 
-1. **Shell scripts** for downloading, processing, and quality‑controlling SRA sequencing data  
-2. **Python scripts** for orthogroup analysis and post‑processing after running **OrthoFinder**
+1. **Shell scripts** for downloading, processing, and quality‑controlling SRA sequencing data: SRA folder  
+2. **Python scripts** for orthogroup analysis and post‑processing after running **OrthoFinder**: OF folder
 
 ---
 

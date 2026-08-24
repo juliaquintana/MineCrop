@@ -1,5 +1,5 @@
 #!/bin/bash
-# Description: Parallel download and QC of FASTQ files from SRA using fastp
+# Description: Parallel download and trimming of FASTQ files from SRA using fastp
 # Author: Julia Quintana
 # Date: 2025-06-24
 

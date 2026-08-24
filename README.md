@@ -36,7 +36,7 @@ This repository currently includes:
 ### `sra_fastqc.sh`
 
 #### Purpose
-Downloads sequencing data from the **NCBI Sequence Read Archive (SRA)**, converts it to FASTQ format, performs quality control and trimming using **FastQC**, generate a summary report with MultiQC, and upload quality control reports to **Google Cloud Storage**.
+Downloads sequencing data from the **NCBI Sequence Read Archive (SRA)**, converts it to FASTQ format, performs quality control using **FastQC**, generate a summary report with MultiQC, and upload quality control reports to **Google Cloud Storage**.
 
 #### Description
 This script processes SRA accessions **sequentially** from a provided list. For each accession, it:

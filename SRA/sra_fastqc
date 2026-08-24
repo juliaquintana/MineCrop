@@ -13,16 +13,16 @@ set -euo pipefail
 # -------------------------
 
 # File containing one SRA accession per line
-SRA_LIST="/path/to/SRR_Acc_List.txt"
+SRA_LIST="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/scripts/SRR_Acc_List.txt"
 
 # Temporary directory for FASTQ files
 RAW_DIR="/tmp/sra_raw"
 
 # Directory for QC results
-QC_DIR="/path/to/qc_reports"
+QC_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/sra/qc_reports"
 
 # Google Cloud bucket
-GCS_BUCKET="gs://your_bucket_name/"
+GCS_BUCKET="gs://sra_c4evo/"
 
 # Thread settings
 DUMP_THREADS=8
@@ -91,6 +91,10 @@ while IFS= read -r accession || [[ -n "$accession" ]]; do
 
         rm -f "$RAW_DIR/${accession}"*.fastq
 
+        echo "🗑️ Clearing SRA cache..."
+
+        cache-mgr --clear
+
         echo "✅ Completed $accession"
 
     else
@@ -100,15 +104,6 @@ while IFS= read -r accession || [[ -n "$accession" ]]; do
     fi
 
 done < "$SRA_LIST"
-
-# -------------------------
-# Clear cache once
-# -------------------------
-
-echo ""
-echo "🗑️ Clearing SRA cache..."
-
-cache-mgr --clear
 
 # -------------------------
 # Generate MultiQC report

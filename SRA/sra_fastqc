@@ -22,7 +22,7 @@ RAW_DIR="/tmp/sra_raw"
 QC_DIR="/path/to/qc_reports"
 
 # Google Cloud bucket
-GCS_BUCKET="gs://sra_c4evo/"
+GCS_BUCKET="gs://yourbucketname/"
 
 # Thread settings
 DUMP_THREADS=8

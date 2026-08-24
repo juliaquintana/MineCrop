@@ -1,84 +1,142 @@
 #!/bin/bash
-# Description: Download FASTQ files from SRA and run QC with FastQC
+# =============================================================================
+# Download SRA accessions, run FastQC, summarize with MultiQC,
+# and upload QC reports to Google Cloud Storage.
 # Author: Julia Quintana
 # Date: 2026-08-24
+# =============================================================================
 
 set -euo pipefail
 
-# Set paths
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRA_LIST="./SRR_Acc_List.txt"
+# -------------------------
+# User settings
+# -------------------------
+
+# File containing one SRA accession per line
+SRA_LIST="/path/to/SRR_Acc_List.txt"
+
+# Temporary directory for FASTQ files
 RAW_DIR="/tmp/sra_raw"
+
+# Directory for QC results
 QC_DIR="./qc_reports"
 
-# Create output directories
-mkdir -p "$RAW_DIR" "$QC_DIR"
+# Google Cloud bucket
+GCS_BUCKET="gs://your-bucket-name"
 
-# Loop through each accession number
+# Thread settings
+DUMP_THREADS=8
+FASTQC_THREADS=4
+
+# -------------------------
+# Create directories
+# -------------------------
+
+mkdir -p "$RAW_DIR"
+mkdir -p "$QC_DIR"
+
+echo "🚀 Starting SRA QC pipeline"
+echo "📄 Accession list: $SRA_LIST"
+echo "📁 QC directory: $QC_DIR"
+
+# -------------------------
+# Process accessions
+# -------------------------
+
 while IFS= read -r accession || [[ -n "$accession" ]]; do
 
-    # Remove leading/trailing spaces and Windows line endings
+    # Remove whitespace and Windows line endings
     accession=$(printf '%s' "$accession" | tr -d '\r' | xargs)
 
     # Skip empty lines
     [[ -z "$accession" ]] && continue
 
-    echo "🔽 Downloading $accession..."
+    echo ""
+    echo "════════════════════════════════════════"
+    echo "🔽 Downloading $accession"
+    echo "════════════════════════════════════════"
 
     if prefetch "$accession"; then
+
+        echo "📦 Converting SRA to FASTQ..."
 
         fasterq-dump \
             "$accession" \
             -O "$RAW_DIR" \
             -t "$RAW_DIR" \
-            -e 8
+            -e "$DUMP_THREADS"
 
-        echo "🔬 Running FastQC for $accession..."
+        echo "🔬 Running FastQC..."
 
-        fastqc \
-            -t 8 \
-            -o "$QC_DIR" \
-            "$RAW_DIR/${accession}_1.fastq" \
-            "$RAW_DIR/${accession}_2.fastq"
+        # Paired-end
+        if [[ -f "$RAW_DIR/${accession}_2.fastq" ]]; then
 
-        echo "☁️ Uploading FastQC reports to Google Cloud..."
+            fastqc \
+                -t "$FASTQC_THREADS" \
+                -o "$QC_DIR" \
+                "$RAW_DIR/${accession}_1.fastq" \
+                "$RAW_DIR/${accession}_2.fastq"
 
-        gsutil -m cp \
-            "$QC_DIR/${accession}_1_fastqc.html" \
-            "$QC_DIR/${accession}_2_fastqc.html" \
-            gs://your-bucket-name
+        # Single-end
+        else
 
-        echo "🧹 Cleaning up..."
+            fastqc \
+                -t "$FASTQC_THREADS" \
+                -o "$QC_DIR" \
+                "$RAW_DIR/${accession}.fastq"
 
-        cache-mgr --clear
+        fi
 
-        rm -f \
-            "$RAW_DIR/${accession}_1.fastq" \
-            "$RAW_DIR/${accession}_2.fastq"
+        echo "🧹 Removing temporary FASTQ files..."
+
+        rm -f "$RAW_DIR/${accession}"*.fastq
+
+        echo "✅ Completed $accession"
 
     else
 
-        echo "❌ Failed to prefetch $accession"
+        echo "❌ Failed to download $accession"
 
     fi
 
-    echo "✅ Done with $accession"
-
 done < "$SRA_LIST"
 
+# -------------------------
+# Clear cache once
+# -------------------------
+
+echo ""
+echo "🗑️ Clearing SRA cache..."
+
+cache-mgr --clear
+
+# -------------------------
+# Generate MultiQC report
+# -------------------------
+
+echo ""
 echo "📊 Generating MultiQC report..."
 
-multiqc "$QC_DIR" \
+multiqc \
+    "$QC_DIR" \
     --outdir "$QC_DIR/multiqc"
 
-echo "☁️ Uploading MultiQC report..."
+# -------------------------
+# Upload results
+# -------------------------
+
+echo ""
+echo "☁️ Uploading MultiQC results..."
 
 gsutil cp \
     "$QC_DIR/multiqc/multiqc_report.html" \
-    gs://your-bucket-name
+    "$GCS_BUCKET/"
 
 gsutil -m cp -r \
     "$QC_DIR/multiqc/multiqc_data" \
-    gs://your-bucket-name
+    "$GCS_BUCKET/"
 
-echo "🎉 QC analysis complete!"
+echo ""
+echo "🎉 QC pipeline completed successfully!"
+echo "📈 MultiQC report uploaded to:"
+echo "☁️ $GCS_BUCKET"

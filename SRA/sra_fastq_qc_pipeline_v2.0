@@ -1,55 +1,85 @@
 #!/bin/bash
-# Description: Download FASTQ files from SRA and run QC with fastp, including trimming
+# Description: Download FASTQ files from SRA and run QC with FastQC
 # Author: Julia Quintana
-# Date: 2025-06-24
-# Temporary storage: Uses /tmp for intermediate files to reduce clutter and improve I/O speed.
-# Compression: Ensures output is compressed with .gz to save space.
-# Whenever possible, use more threads to increase spped
+# Date: 2026-08-24
+
+set -euo pipefail
 
 # Set paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRA_LIST="$SCRIPT_DIR/SRR_Acc_List.txt"
-# Temporary storage for raw files: Uses /tmp for intermediate files to reduce clutter and improve I/O speed. After QC, those are no longer needed.
+SRA_LIST="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/scripts/SRR_Acc_List.txt"
 RAW_DIR="/tmp/sra_raw"
-QC_DIR="$SCRIPT_DIR/qc_reports"
+
+QC_DIR="/Users/julia/Library/CloudStorage/OneDrive-UniversidadReyJuanCarlos/MADRID_URJC/PROJECTS/C4EVO/WP_Transcriptomics/sra/qc_reports"
 
 # Create output directories
 mkdir -p "$RAW_DIR" "$QC_DIR"
 
 # Loop through each accession number
-while IFS= read -r accession; do
-    echo "🔽 Downloading $accession..."
-    
-    if prefetch "$accession"; then
-        fasterq-dump "$accession" -O "$RAW_DIR" -t "$RAW_DIR"
-        echo "🔬 Running fastp QC for $accession..."
-        # Run fastp QC
-        fastp \
-            -i "$RAW_DIR/${accession}_1.fastq" \
-            -I "$RAW_DIR/${accession}_2.fastq" \
-            -o "$QC_DIR/${accession}_1.clean.fastq.gz" \
-            -O "$QC_DIR/${accession}_2.clean.fastq.gz" \
-            -h "$QC_DIR/${accession}_fastp.html" \
-            -j "$QC_DIR/${accession}_fastp.json" \
-            --detect_adapter_for_pe \
-            --trim_front1 15 \
-            --trim_front2 15 \
-            --thread 4
-        
-        # Upload to Google Cloud Storage. You should use the -r (recursive) flag with gsutil cp only when you're copying directories, not individual files.
-        echo "☁️ Uploading QC results to Google Cloud..."
-        gsutil -m cp "$QC_DIR/${accession}_fastp.html" \
-             "$QC_DIR/${accession}_1.clean.fastq.gz" \
-             "$QC_DIR/${accession}_2.clean.fastq.gz" \
-             gs://srastorage/your destination folder
+while IFS= read -r accession || [[ -n "$accession" ]]; do
 
-        # Clear the cache
-                echo "🧹 Cleaning up..."
+    # Remove leading/trailing spaces and Windows line endings
+    accession=$(printf '%s' "$accession" | tr -d '\r' | xargs)
+
+    # Skip empty lines
+    [[ -z "$accession" ]] && continue
+
+    echo "🔽 Downloading $accession..."
+
+    if prefetch "$accession"; then
+
+        fasterq-dump \
+            "$accession" \
+            -O "$RAW_DIR" \
+            -t "$RAW_DIR" \
+            -e 8
+
+        echo "🔬 Running FastQC for $accession..."
+
+        fastqc \
+            -t 8 \
+            -o "$QC_DIR" \
+            "$RAW_DIR/${accession}_1.fastq" \
+            "$RAW_DIR/${accession}_2.fastq"
+
+        echo "☁️ Uploading FastQC reports to Google Cloud..."
+
+        gsutil -m cp \
+            "$QC_DIR/${accession}_1_fastqc.html" \
+            "$QC_DIR/${accession}_2_fastqc.html" \
+            gs://sra_c4evo/
+
+        echo "🧹 Cleaning up..."
+
         cache-mgr --clear
-        rm -f "$RAW_DIR/${accession}_1.fastq" "$RAW_DIR/${accession}_2.fastq"
+
+        rm -f \
+            "$RAW_DIR/${accession}_1.fastq" \
+            "$RAW_DIR/${accession}_2.fastq"
+
     else
+
         echo "❌ Failed to prefetch $accession"
+
     fi
 
     echo "✅ Done with $accession"
+
 done < "$SRA_LIST"
+
+echo "📊 Generating MultiQC report..."
+
+multiqc "$QC_DIR" \
+    --outdir "$QC_DIR/multiqc"
+
+echo "☁️ Uploading MultiQC report..."
+
+gsutil cp \
+    "$QC_DIR/multiqc/multiqc_report.html" \
+    gs://sra_c4evo/
+
+gsutil -m cp -r \
+    "$QC_DIR/multiqc/multiqc_data" \
+    gs://sra_c4evo/
+
+echo "🎉 QC analysis complete!"

@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Download SRA accessions, run FastQC, summarize with MultiQC,
-# and upload QC reports to Google Cloud Storage.
+# and upload MultiQC reports to Google Cloud Storage.
 # Author: Julia Quintana
 # Date: 2026-08-24
 # =============================================================================

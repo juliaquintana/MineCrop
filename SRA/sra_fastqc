@@ -16,7 +16,7 @@ set -euo pipefail
 SRA_LIST="/path/to/SRR_Acc_List.txt"
 
 # Temporary directory for FASTQ files
-RAW_DIR="/tmp/sra_raw"
+RAW_DIR="$HOME/sra_raw"
 
 # Directory for QC results
 QC_DIR="/path/to/qc_reports"
